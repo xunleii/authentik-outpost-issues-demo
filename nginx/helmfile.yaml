@@ -1,0 +1,39 @@
+repositories:
+  - name: bicarus-labs
+    url: https://bicarus-labs.github.io/helm-charts
+  - name: ingress-nginx
+    url: https://kubernetes.github.io/ingress-nginx
+
+releases:
+  - name: ingress-nginx
+    namespace: kube-system
+    chart: ingress-nginx/ingress-nginx
+    values:
+      - controller:
+          admissionWebhooks:
+            enabled: false
+          watchIngressWithoutClass: true
+
+  - name: http-debug
+    namespace: default
+    needs:
+      - kube-system/ingress-nginx
+    chart: bicarus-labs/http-debug
+    values:
+      - ingress:
+          enabled: true
+          annotations:
+            nginx.ingress.kubernetes.io/auth-url: |-
+              http://ak-outpost-default.authentik.svc.cluster.local:9000/outpost.goauthentik.io/auth/nginx
+            nginx.ingress.kubernetes.io/auth-signin: |-
+              https://debug.127-0-0-1.nip.io/outpost.goauthentik.io/start?rd=$escaped_request_uri
+            nginx.ingress.kubernetes.io/auth-response-headers: |-
+              Set-Cookie,X-authentik-username,X-authentik-groups,X-authentik-email,X-authentik-name,X-authentik-uid
+            nginx.ingress.kubernetes.io/auth-snippet: |
+              proxy_set_header X-Forwarded-Host $http_host;
+          hosts:
+            - host: debug.127-0-0-1.nip.io
+              paths:
+                - path: /
+                  pathType: ImplementationSpecific
+        replicaCount: 5

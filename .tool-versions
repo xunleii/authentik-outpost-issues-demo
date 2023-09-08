@@ -1,0 +1,5 @@
+helm 3.12.3
+helmfile 0.156.0
+k3d 5.6.0
+kubectl 1.28.1
+terraform 1.5.7

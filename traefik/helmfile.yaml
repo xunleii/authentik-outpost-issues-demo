@@ -1,0 +1,29 @@
+repositories:
+  - name: bicarus-labs
+    url: https://bicarus-labs.github.io/helm-charts
+  - name: traefik
+    url: https://traefik.github.io/charts
+
+releases:
+  - name: traefik
+    namespace: kube-system
+    chart: traefik/traefik
+    disableValidation: true
+
+  - name: http-debug
+    namespace: default
+    needs:
+      - kube-system/traefik
+    chart: bicarus-labs/http-debug
+    values:
+      - ingress:
+          enabled: true
+          className: traefik
+          annotations:
+            traefik.ingress.kubernetes.io/router.middlewares: authentik-ak-outpost-default@kubernetescrd
+          hosts:
+            - host: debug.127-0-0-1.nip.io
+              paths:
+                - path: /
+                  pathType: ImplementationSpecific
+        replicaCount: 5

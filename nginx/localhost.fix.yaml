@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/server-snippet: |
+      return 301 $scheme://authentik.127-0-0-1.nip.io$request_uri;
+  labels:
+    app.kubernetes.io/instance: authentik
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: authentik
+  name: fix-authentik-redirect
+  namespace: authentik
+spec:
+  rules:
+  - host: authentik.authentik.svc.cluster.local
+    http:
+      paths:
+      - backend:
+          service:
+            name: authentik
+            port:
+              name: http
+        path: /
+        pathType: Prefix
